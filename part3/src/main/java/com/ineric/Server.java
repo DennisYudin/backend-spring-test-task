@@ -11,15 +11,18 @@ public class Server {
 
     public Server(int port, String rootDir) {
         ServerSocket serverSocket = null;
+        //можно использовать try with resources
         try {
             serverSocket = new ServerSocket(port);
             DirectoryTreeTraversal directoryTraversal = new DirectoryTreeTraversal(rootDir);
             new Thread(directoryTraversal).start();
+            //неправильно ждать пока вылетит эксепшен
             while (true) {
                 ClientHandler client = new ClientHandler(serverSocket.accept(), this, directoryTraversal);
                 new Thread(client).start();
             }
         } catch (IOException exception) {
+            //не проглатываем эксепшен
             LOGGER.error(exception.getMessage());
         } finally {
             try {
@@ -29,5 +32,4 @@ public class Server {
             }
         }
     }
-
 }

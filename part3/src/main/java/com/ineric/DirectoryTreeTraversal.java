@@ -31,14 +31,18 @@ public class DirectoryTreeTraversal implements Runnable {
 
     @Override
     public void run() {
+        //не правильно написанный метод основанный на том что
+        //мы ждем пока вылетит эксепшен
         while (true) {
             if (!currentPassageOptions.isEmpty()) {
                 PassageOptions passageOptions = currentPassageOptions.remove();
                 try {
                     CompletableFuture.supplyAsync(() -> getDirItems(rootPath, passageOptions.getDepth(), passageOptions.getMask()), executorService)
                             .thenAccept(results -> passageOptions.getResults().accept(results));
+                    //RuntimeException не перехватываем
                 } catch (RuntimeException exception) {
                     LOGGER.error(exception.getMessage());
+                    //эксепшн не проглатываем
                 }
             }
         }
@@ -65,6 +69,7 @@ public class DirectoryTreeTraversal implements Runnable {
                 } else if (calcDepth(currentFile.getAbsolutePath()) == fullDepth && isMaskContains(mask, currentFile)) {
                     result.add(currentFile.getAbsolutePath());
                 }
+                //NullPointerException не перехватываем
             } catch (NullPointerException exception) {
                 LOGGER.error("Error read directory list in {}. Exception: {}", currentFile.getPath(), exception.getMessage());
             }

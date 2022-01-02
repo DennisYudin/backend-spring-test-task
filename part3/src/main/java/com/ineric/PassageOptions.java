@@ -39,6 +39,7 @@ public class PassageOptions {
         return mask;
     }
 
+    //у меня есть предположение что что то не так с этим переопределением
     @Override
     public boolean equals(Object o) {
         PassageOptions that = (PassageOptions) o;

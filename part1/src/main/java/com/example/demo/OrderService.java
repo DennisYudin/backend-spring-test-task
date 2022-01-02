@@ -32,6 +32,7 @@ public class OrderService {
         if (ObjectUtils.isEmpty(productIds)) {
             throw new IllegalArgumentException("Product ids can not be empty");
         }
+        //указываем конкретный тип
         var orderItems = productIds.stream()
                 .map(id -> OrderItemEntity.builder()
                         .productId(id)
@@ -39,22 +40,25 @@ public class OrderService {
                 .collect(Collectors.toSet());
         createOrderFromItems(orderItems);
     }
-
+    //почему доступ паблик
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void createOrderFromItems(Set<OrderItemEntity> orderItems) {
+        //указываем конкретный тип
         var order = OrderEntity.builder()
                 .orderItems(orderItems)
                 .build();
         entityManager.persist(order);
         publishOrderCreation(order);
     }
-
+    //в целом сложный метод для восприятия думаю можно его разбить на более мелкие методы
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public List<Long> returnOrder(Long orderId,
                                   Long returnedProductId) {
         if (returnedProductId == null) {
+            //сообщение в константы
             throw new IllegalArgumentException("Product id can not be null");
         }
+        //указываем конкретный тип
         var order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
         if (order.isIssued()) {
@@ -66,6 +70,7 @@ public class OrderService {
                     throw new IllegalArgumentException("Product already returned");
                 }
                 orderItem.setReturned(true);
+                //не очень хорошее название
                 publishOrderReturn(orderId, returnedProductId);
                 return orderItemRepository.getNotReturnedProductIds(orderId);
             }

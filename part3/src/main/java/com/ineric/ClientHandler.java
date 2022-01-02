@@ -32,6 +32,7 @@ public class ClientHandler implements Runnable {
             this.responseStream = new PrintWriter(socket.getOutputStream());
             this.requestStream = new Scanner(socket.getInputStream());
         } catch (IOException exception) {
+            //нельзя проглатывать эксепшен!
             LOGGER.error(exception.toString());
         }
     }
@@ -42,12 +43,15 @@ public class ClientHandler implements Runnable {
     }
 
     private void runHandler() {
+        //не правильно написанный метод основанный на том что
+        //мы ждем пока вылетит эксепшен
         while (true) {
             if (requestStream.hasNext()) {
                 try {
                     String request =requestStream.nextLine();
                     LOGGER.info(LOGGER_REQUEST_PATTERN, request);
                     prepareResponse(request);
+                    //RuntimeException не перехватываем
                 } catch (RuntimeException exception) {
                     LOGGER.error(exception.getMessage());
                     sendResponse(exception.getMessage());
@@ -56,6 +60,7 @@ public class ClientHandler implements Runnable {
             try {
                 Thread.sleep(HANDLER_DELAY);
             } catch (InterruptedException ignored) {
+                //эксепшен непроглатываем
             }
         }
 
@@ -71,8 +76,9 @@ public class ClientHandler implements Runnable {
             if (passageOptions.getDepth() != null && passageOptions.getMask() != null) {
                 directoryTraversal.addPassageOptions(passageOptions);
             }
-
+            //NumberFormatException не перехватываем
         } catch (NumberFormatException exception) {
+            //эксепшен не проглатываем
             LOGGER.error("Error read parameters. {}", exception.getMessage());
         }
     }
@@ -96,8 +102,10 @@ public class ClientHandler implements Runnable {
         try {
             responseStream.println(response);
             responseStream.flush();
+            // нужно перехватывать конкретный эксепшен
         } catch (Exception exception) {
             LOGGER.error(exception.getMessage());
+            // нельзя проглатывать эксепшен
         }
     }
 
