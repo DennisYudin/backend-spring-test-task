@@ -18,15 +18,16 @@ import java.util.List;
 @RequestMapping("/order")
 @CrossOrigin("*")
 @RestController
+//не корректное название контроллера
 public class Controller {
-
+    //доступ через интерфейс
     private final OrderService orderService;
 
     @Autowired
     public Controller(OrderService orderService) {
         this.orderService = orderService;
     }
-
+    //комменты лишние
     /**
      * Создание заказа
      *
@@ -44,9 +45,11 @@ public class Controller {
      * @param returnedProductId Id продукта, на который оформляется возврат
      * @return Id продуктов в заказе, на которые еще не оформлен возврат
      */
+    //странный запрос постмеппинга
     @PostMapping("/{orderId}/return")
     public List<Long> returnOrder(@PathVariable Long orderId,
                                   @RequestBody Long returnedProductId) {
+        //нету проверки врохдных данных
         return orderService.returnOrder(orderId, returnedProductId);
     }
 

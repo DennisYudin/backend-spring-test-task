@@ -12,5 +12,6 @@ public interface OrderItemRepository extends JpaRepository<OrderEntity, Long> {
             "SELECT product_id FROM order_item_entity " +
             "WHERE order_id = ?1 " +
             "AND returned = 'false'")
+    //непонятное название
     List<Long> getNotReturnedProductIds(long orderId);
 }

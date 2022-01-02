@@ -18,11 +18,12 @@ class CharCountLogicTest {
     void setup() {
         this.charCountLogic = new CharCountLogic();
     }
-    
+    //слово test_в названии можно не писать и так понятно что это такое
     @Test
     void test_getFrequencyOutput_ShouldReturnCorrectFreq_WhenInput_a() {
         String input = "a";
-        String expect = QUOTES + "a" + QUOTES + " - 1";        
+        String expect = QUOTES + "a" + QUOTES + " - 1";
+        //charCountLogic.getFrequencyOutput(input) -> это actual значение и указывается assertEquals(expect, actual);
         assertEquals(expect, charCountLogic.getFrequencyOutput(input));
     }
 
