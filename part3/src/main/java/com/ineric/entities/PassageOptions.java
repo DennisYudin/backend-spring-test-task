@@ -1,11 +1,12 @@
-package com.ineric;
+package com.ineric.entities;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class PassageOptions {
     private Integer depth;
-    protected String mask;
+    private String mask;
     private Consumer<List<String>> results;
 
     public PassageOptions(){
@@ -30,7 +31,7 @@ public class PassageOptions {
     }
 
 
-    protected Integer getDepth() {
+    public Integer getDepth() {
         return depth;
     }
 
@@ -41,16 +42,16 @@ public class PassageOptions {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         PassageOptions that = (PassageOptions) o;
-
-        if (getDepth() != that.getDepth()) return false;
-        return getMask() != null ? getMask().equals(that.getMask()) : that.getMask() == null;
+        return depth.equals(that.depth) &&
+                mask.equals(that.mask) &&
+                results.equals(that.results);
     }
 
     @Override
     public int hashCode() {
-        int result = getDepth();
-        result = 31 * result + (getMask() != null ? getMask().hashCode() : 0);
-        return result;
+        return Objects.hash(depth, mask, results);
     }
 }

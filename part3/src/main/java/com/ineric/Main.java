@@ -1,6 +1,7 @@
 package com.ineric;
 
 
+import com.ineric.handler.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,21 +21,15 @@ public class Main {
         int port = DEFAULT_PORT;
         String rootDir = "";
 
-        try {
-            for (int i = 0; i < args.length; i += 2) {
-                if (args[i].equals(PARAM_PORT)) {
-                    port = Integer.parseInt(args[i + 1]);
-                }
-                if (args[i].equals(PARAM_ROOT_DIR)) {
-                    rootDir = args[i + 1];
-                }
+        for (int i = 0; i < args.length; i += 2) {
+            if (args[i].equals(PARAM_PORT)) {
+                port = Integer.parseInt(args[i + 1]);
             }
-
-            new Server(port, rootDir);
-        } catch (NumberFormatException exception) {
-            LOGGER.error("Error read parameters. {}", exception.getMessage());
+            if (args[i].equals(PARAM_ROOT_DIR)) {
+                rootDir = args[i + 1];
+            }
         }
+        Server server = new Server(port, rootDir);
+        LOGGER.debug("Server: " + server);
     }
-
-
 }

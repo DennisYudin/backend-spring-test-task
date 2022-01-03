@@ -1,5 +1,6 @@
-package com.ineric;
+package com.ineric.handler;
 
+import com.ineric.entities.PassageOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,16 +32,12 @@ public class DirectoryTreeTraversal implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
-            if (!currentPassageOptions.isEmpty()) {
-                PassageOptions passageOptions = currentPassageOptions.remove();
-                try {
-                    CompletableFuture.supplyAsync(() -> getDirItems(rootPath, passageOptions.getDepth(), passageOptions.getMask()), executorService)
-                            .thenAccept(results -> passageOptions.getResults().accept(results));
-                } catch (RuntimeException exception) {
-                    LOGGER.error(exception.getMessage());
-                }
-            }
+        while (!currentPassageOptions.isEmpty()) {
+            PassageOptions passageOptions = currentPassageOptions.remove();
+
+            CompletableFuture.supplyAsync(() -> getDirItems(
+                    rootPath, passageOptions.getDepth(), passageOptions.getMask()), executorService)
+                    .thenAccept(results -> passageOptions.getResults().accept(results));
         }
     }
 
@@ -59,17 +56,15 @@ public class DirectoryTreeTraversal implements Runnable {
 
         while (!fileTree.isEmpty()) {
             File currentFile = fileTree.remove();
-            try {
-                if (currentFile.isDirectory() && (calcDepth(currentFile.getAbsolutePath()) < fullDepth)) {
-                    Collections.addAll(fileTree, Objects.requireNonNull(currentFile.listFiles()));
-                } else if (calcDepth(currentFile.getAbsolutePath()) == fullDepth && isMaskContains(mask, currentFile)) {
-                    result.add(currentFile.getAbsolutePath());
-                }
-            } catch (NullPointerException exception) {
-                LOGGER.error("Error read directory list in {}. Exception: {}", currentFile.getPath(), exception.getMessage());
+            if (currentFile == null) {
+                throw new IllegalArgumentException("currentFile is null");
+            }
+            if (currentFile.isDirectory() && (calcDepth(currentFile.getAbsolutePath()) < fullDepth)) {
+                Collections.addAll(fileTree, Objects.requireNonNull(currentFile.listFiles()));
+            } else if (calcDepth(currentFile.getAbsolutePath()) == fullDepth && isMaskContains(mask, currentFile)) {
+                result.add(currentFile.getAbsolutePath());
             }
         }
-
         return result;
     }
 
@@ -85,6 +80,4 @@ public class DirectoryTreeTraversal implements Runnable {
     private static boolean isMaskContains(String mask, File currentFile) {
         return currentFile.getName().toUpperCase().contains(mask.toUpperCase());
     }
-
-
 }
