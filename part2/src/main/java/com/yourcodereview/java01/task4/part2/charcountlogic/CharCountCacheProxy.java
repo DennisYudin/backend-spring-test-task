@@ -1,7 +1,9 @@
 package com.yourcodereview.java01.task4.part2.charcountlogic;
 
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class CharCountCacheProxy implements CharCount {
     private CharCount charCountLogic;
@@ -15,27 +17,36 @@ public class CharCountCacheProxy implements CharCount {
     }
 
     @Override
-    public String getFrequencyOutput(String key) {
-        if (this.cache.containsKey(key)) {
-            return this.cache.get(key);
+    public String calculate(String input) {
+
+        validate(input);
+
+        if (this.cache.containsKey(input)) {
+            return this.cache.get(input);
         } 
-        String result = charCountLogic.getFrequencyOutput(key);
-        put(key, result);
-        this.prune();
-        return this.cache.get(key);
+        String result = charCountLogic.calculate(input);
+
+        cleanCache();
+
+        cache.put(input, result);
+
+        return cache.get(input);
     }
 
-    private void put(String key, String result) {
-        this.cache.put(key, result);
-        this.prune();
-    }
-
-    private void prune() {
-        var cacheIterator = this.cache.keySet().iterator();
-        while (this.cache.size() > this.maxSize) {
+    private void cleanCache() {
+        Iterator cacheIterator = cache.keySet().iterator();
+        while (cache.size() > maxSize) {
             cacheIterator.next();
             cacheIterator.remove();
         }
     }
 
+    private void validate(String input) {
+        Optional.ofNullable(input).orElseThrow(() -> {
+            throw new IllegalArgumentException("Empty or null string");
+        });
+        Optional.of(input).filter(s -> s.isEmpty()).ifPresent(s -> {
+            throw new IllegalArgumentException("Empty or null string");
+        });
+    }
 }

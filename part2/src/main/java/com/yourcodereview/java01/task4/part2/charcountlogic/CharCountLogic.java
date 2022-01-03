@@ -5,20 +5,21 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class CharCountLogic implements CharCount {
+    private static final String DELIMITER = "\n";
 
     @Override
-    public String getFrequencyOutput(String input) {
-        return getCharsCount(input);
+    public String calculate(String input) {
+        return getFormattedOutput(input);
     }
     
-    private String getCharsCount(String input) {
-        return calculateFrequancy(input).entrySet().stream()
+    private String getFormattedOutput(String input) {
+        return calculateFrequency(input).entrySet().stream()
                     .map(entry -> QUOTES + entry.getKey() + QUOTES + " - " + entry.getValue())
-                    .collect(Collectors.joining("\n")
+                    .collect(Collectors.joining(DELIMITER)
                     );
     }
     
-    private Map<String, Integer> calculateFrequancy(String input) {
+    private Map<String, Integer> calculateFrequency(String input) {
         return input.chars().mapToObj(c -> String.valueOf((char)c))
                     .collect(Collectors.toMap(
                     key -> key,
@@ -27,5 +28,5 @@ public class CharCountLogic implements CharCount {
                     LinkedHashMap<String, Integer>::new
                     ));
     }
-    
 }
+

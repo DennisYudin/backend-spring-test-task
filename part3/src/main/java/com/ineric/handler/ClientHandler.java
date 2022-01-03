@@ -1,4 +1,4 @@
-package com.ineric;
+package com.ineric.handler;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -6,6 +6,8 @@ import java.net.Socket;
 import java.util.List;
 import java.util.Scanner;
 
+import com.ineric.entities.PassageOptions;
+import com.ineric.exceptions.HandlerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +35,7 @@ public class ClientHandler implements Runnable {
             this.requestStream = new Scanner(socket.getInputStream());
         } catch (IOException exception) {
             LOGGER.error(exception.toString());
+            throw new HandlerException("Error during ClientHandler()", exception);
         }
     }
 
@@ -42,48 +45,42 @@ public class ClientHandler implements Runnable {
     }
 
     private void runHandler() {
-        while (true) {
-            if (requestStream.hasNext()) {
-                try {
-                    String request =requestStream.nextLine();
-                    LOGGER.info(LOGGER_REQUEST_PATTERN, request);
-                    prepareResponse(request);
-                } catch (RuntimeException exception) {
-                    LOGGER.error(exception.getMessage());
-                    sendResponse(exception.getMessage());
-                }
-            }
-            try {
-                Thread.sleep(HANDLER_DELAY);
-            } catch (InterruptedException ignored) {
-            }
+        while (requestStream.hasNext()) {
+            String request = requestStream.nextLine();
+            LOGGER.info(LOGGER_REQUEST_PATTERN, request);
+            prepareResponse(request);
         }
-
+        try {
+            Thread.sleep(HANDLER_DELAY);
+        } catch (InterruptedException exception) {
+            throw new HandlerException("Error during runHandler()", exception);
+        }
     }
 
     private void prepareResponse(String request) {
         String[] args = request.split(COMMAND_DELIMITER);
+
         PassageOptions passageOptions = new PassageOptions();
         passageOptions.setResults(this::prepareResult);
-        try {
-            readParamsToOptions(args, passageOptions);
 
-            if (passageOptions.getDepth() != null && passageOptions.getMask() != null) {
-                directoryTraversal.addPassageOptions(passageOptions);
-            }
+        readParamsToOptions(args, passageOptions);
 
-        } catch (NumberFormatException exception) {
-            LOGGER.error("Error read parameters. {}", exception.getMessage());
+        if (passageOptions.getDepth() != null && passageOptions.getMask() != null) {
+            directoryTraversal.addPassageOptions(passageOptions);
         }
     }
 
-    private void readParamsToOptions(String[] args, PassageOptions passageOptions) {
-        for (int i = 0; i < args.length; i += 2) {
-            if (args[i].equals(PARAM_DEPTH)) {
-                passageOptions.setDepth(Integer.parseInt(args[i + 1]));
+    private void readParamsToOptions(String[] input, PassageOptions passageOptions) {
+        for (int i = 0; i < input.length; i += 2) {
+            if (PARAM_DEPTH.equals(input[i])) {
+                int depth = Integer.parseInt(input[i + 1]);
+
+                passageOptions.setDepth(depth);
             }
-            if (args[i].equals(PARAM_MASK)) {
-                passageOptions.setMask(args[i + 1]);
+            if (PARAM_MASK.equals(input[i])) {
+                String mask = input[i + 1];
+
+                passageOptions.setMask(mask);
             }
         }
     }
@@ -93,12 +90,7 @@ public class ClientHandler implements Runnable {
     }
 
     private void sendResponse(String response) {
-        try {
-            responseStream.println(response);
-            responseStream.flush();
-        } catch (Exception exception) {
-            LOGGER.error(exception.getMessage());
-        }
+        responseStream.println(response);
+        responseStream.flush();
     }
-
 }
